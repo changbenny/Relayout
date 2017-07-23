@@ -1,11 +1,13 @@
 class Vertical {
-  constructor() {
+  constructor(props) {
     this.width = 0
     this.height = 0
     this.x = 0
     this.y = 0
     this.parent = null
     this.children = []
+    this.props = props
+    this.size(props)
   }
   size(props) {
     this.width = props.width || 0
@@ -36,6 +38,9 @@ function dom(ele) {
   node.style.top = `${ele.y}px`
   node.style.width = `${ele.width}px`
   node.style.height = `${ele.height}px`
+  for (let p in ele.props) {
+    node.style[p] = ele.props[p]
+  }
   return node
 }
 
@@ -47,8 +52,7 @@ function render(ele, target) {
 }
 
 function h(name, props, children) {
-  let ele = new elements[name]()
-  ele.size(props)
+  let ele = new elements[name](props)
   if (children) {
     for (let i = 0; i < children.length; i ++) {
       let child = children[i]
@@ -65,9 +69,9 @@ function h(name, props, children) {
 
 
 
-const app = h('vertical', {}, [
-  h('vertical', { width: 100, height: 100 }),
-  h('vertical', { width: 100, height: 100 }),
-  h('vertical', { width: 100, height: 100 }),
+const app = h('vertical', { background: 'red' }, [
+  h('vertical', { width: 100, height: 100, background: 'black' }),
+  h('vertical', { width: 150, height: 100, background: 'black' }),
+  h('vertical', { width: 120, height: 100, background: 'black' }),
 ])
 render(app, document.body)
