@@ -28,10 +28,7 @@ class Element {
   born(par) {
     this.parent = par
   }
-  layout(ele) {
-    // ele.parent = this
-    // this.children.push(ele)
-  }
+  layout() {}
   position() {
     let { x, y } = this.parent ? this.parent.ask(this) : { x: 0, y: 0 }
     this.x = x
