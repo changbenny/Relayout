@@ -84,50 +84,69 @@ class Horizontal extends Element {
   }
 }
 
-// class Flexbox extends Element {
-//   constructor() {
-//     this.direction = 'row'
-//     this.alignItems = 'flex-start'
-//     this.justifyContent = 'flex-start'
-//   }
-//   insert(ele) {
-//     super.insert(ele)
-//     if (this.direction === 'column') {
-//       this.fixedWidth || (this.width = Math.max(this.width, ele.width))
-//       this.fixedHeight || (this.height += ele.height)
-//     } else {
-//       this.fixedWidth || (this.width += ele.width)
-//       this.fixedHeight || (this.height = Math.max(this.height, ele.height))
-//     }
-//   }
-//   layout(ele) {
-//     let x = 0
-//     let y = 0
-//     if (this.direction === 'column') {
+class Flexbox extends Element {
+  constructor(props) {
+    super(props)
+    this.direction = 'row'
+    this.alignItems = 'flex-end'
+    this.justifyContent = 'flex-start'
+  }
+  
+  layout() {
+    if (this.direction === 'column') {
+      for (let i = 0; i < this.children.length; i ++) {
+        let child = this.children[i]
+        let { width, height } = child.layout()
+        this.height += height
+        this.width = Math.max(this.width, width)
+      }
+    } else {
+      for (let i = 0; i < this.children.length; i ++) {
+        let child = this.children[i]
+        let { width, height } = child.layout()
+        this.width += width
+        this.height = Math.max(this.height, height)
+      }
+    }
+    
+    return {
+      width: this.width,
+      height: this.height,
+    }
+  }
+
+  ask(ele) {
+    let x = 0
+    let y = 0
+    if (this.direction === 'column') {
       
-//     } else {
-//       if (this.alignItems === 'flex-start') {
-//         x = this.x + this.width
-//       } else if (this.alignItems === 'flex-end') {
-//         x = this.fixedWidth ? this.x - ele.width : this.x - ele.width
-//       } else if (this.alignItems === 'center') {
+    } else {
+      if (this.alignItems === 'flex-start') {
+        x = this.x + this.offsetX
+        this.offsetX += ele.width
+      } else if (this.alignItems === 'flex-end') {
+        x = this.fixedWidth ? this.x + this.width - this.offsetX - ele.width :
+                              this.x + this.width - this.offsetX - ele.width
+        this.offsetX += ele.width
+      } else if (this.alignItems === 'center') {
 
-//       }
-//       if (this.justifyContent === 'flex-start') {
-//         y = this.y
-//       } else if (this.justifyContent === 'flex-end') {
-//         y = this.y + this.height - ele.height
-//       } else if (this.justifyContent === 'center') {
+      }
+      if (this.justifyContent === 'flex-start') {
+        y = this.y
+      } else if (this.justifyContent === 'flex-end') {
+        y = this.y + this.height - ele.height
+      } else if (this.justifyContent === 'center') {
 
-//       }
-//     }
-//     return { x, y }
-//   }
-// }
+      }
+    }
+    return { x, y }
+  }
+}
 
 const elements = {
   vertical: Vertical,
   horizontal: Horizontal,
+  flexbox: Flexbox,
 }
 
 function dom(ele) {
@@ -145,7 +164,6 @@ function dom(ele) {
 
 function render(ele, target) {
   target.appendChild(dom(ele))
-  console.log(ele)
   for (let i = 0; i < ele.children.length; i ++) {
     render(ele.children[i], target)
   }
@@ -180,7 +198,7 @@ function h(name, props, children = []) {
   return ele
 }
 
-const app = h('horizontal', { background: 'red' }, [
+const app = h('flexbox', { background: 'red' }, [
   h('vertical', { width: 100, height: 100, background: 'black' }),
   h('vertical', { width: 150, height: 120, background: 'black' }),
   h('vertical', { width: 120, height: 100, background: 'black' }),
