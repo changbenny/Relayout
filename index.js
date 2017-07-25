@@ -25,9 +25,6 @@ class Element {
       this.height = props.height
     }
   }
-  born(par) {
-    this.parent = par
-  }
   layout() {}
   position() {
     let { x, y } = this.parent ? this.parent.ask(this) : { x: 0, y: 0 }
@@ -42,11 +39,15 @@ class Element {
 
 class Vertical extends Element {
   layout() {
+    if (this.parent && this.parent.fixedWidth && !this.fixedWidth) {
+      this.width = this.parent.width
+      this.fixedWidth = true
+    }
     for (let i = 0; i < this.children.length; i ++) {
       let child = this.children[i]
       let { width, height } = child.layout()
-      this.height += height
-      this.width = Math.max(this.width, width)
+      this.height = this.fixedHeight ? this.height : this.height + height
+      this.width = this.fixedWidth ? this.width : Math.max(this.width, width)
     }
     return {
       width: this.width,
@@ -64,12 +65,32 @@ class Vertical extends Element {
 
 class Horizontal extends Element {
   layout() {
+    let accumulatedWidth = 0
+    if (this.parent && this.parent.fixedHeight && !this.fixedHeight) {
+      this.height = this.parent.height
+      this.fixedHeight = true
+    }
     for (let i = 0; i < this.children.length; i ++) {
       let child = this.children[i]
       let { width, height } = child.layout()
-      this.width += width
-      this.height = Math.max(this.height, height)
+      accumulatedWidth += width
+      this.height = this.fixedHeight ? this.height : Math.max(this.height, height)
     }
+
+    if (this.fixedWidth) {
+      if (accumulatedWidth !== this.width) {
+        // re-layout
+        
+        let ratio = this.width / accumulatedWidth
+        for (let i = 0; i < this.children.length; i ++) {
+          let child = this.children[i]
+          child.width = child.width * ratio
+        }
+        this.width = accumulatedWidth
+      }
+      
+    }
+    
     return {
       width: this.width,
       height: this.height,
@@ -198,10 +219,10 @@ function h(name, props, children = []) {
   return ele
 }
 
-const app = h('flexbox', { background: 'red' }, [
-  h('vertical', { width: 100, height: 100, background: 'black' }),
-  h('vertical', { width: 150, height: 120, background: 'black' }),
-  h('vertical', { width: 120, height: 100, background: 'black' }),
+const app = h('horizontal', { width: 300, background: 'red' }, [
+  h('vertical', { height: 100, background: 'black' }),
+  h('vertical', { height: 120, background: 'black' }),
+  h('vertical', { height: 100, background: 'black' }),
 ])
 layout(app)
 // console.log(app)
